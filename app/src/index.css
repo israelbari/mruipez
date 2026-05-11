@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 79%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 79%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 79%;
+    --primary: 0 0% 79%;
+    --primary-foreground: 0 0% 7%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 79%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 52%;
+    --accent: 28 12% 55%;
+    --accent-foreground: 0 0% 7%;
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 0 0% 79%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 28 12% 55%;
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-primary font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    @apply border-border-custom;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+}

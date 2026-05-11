@@ -1,0 +1,32 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+app/dist/
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker volumes
+mysql_data/
+
+# Research/reference images (not part of the app)
+images/render-search/
