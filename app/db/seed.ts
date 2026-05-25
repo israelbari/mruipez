@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import { createConnection } from "mysql2";
-import { projects, projectAssets, siteContent } from "./schema";
+import { projects, projectAssets, siteContent, pages, sections } from "./schema";
 import { eq } from "drizzle-orm";
 
 const connectionString = process.env.DATABASE_URL;
@@ -130,6 +130,58 @@ async function seed() {
   }
 
   console.log("Site content seed complete.");
+
+  // Seed pages
+  console.log("Seeding pages...");
+  const existingPages = await db.select().from(pages).limit(1);
+  if (existingPages.length === 0) {
+    await db.insert(pages).values({
+      name: "Inicio",
+      slug: "home",
+      isActive: true,
+      order: 0,
+      metaTitle: "MRUIPEZ - Visualización Arquitectónica",
+      metaDescription: "Renders fotorrealistas para arquitectos y desarrolladores",
+    });
+    console.log("  - Created page: Inicio");
+  }
+
+  // Seed sections from site_content
+  console.log("Seeding sections...");
+  const existingSections = await db.select().from(sections).limit(1);
+  if (existingSections.length === 0) {
+    const homePage = await db.select().from(pages).where(eq(pages.slug, "home")).limit(1);
+    const pageId = homePage[0]?.id ?? 1;
+
+    const siteContents = await db.select().from(siteContent);
+    for (const sc of siteContents) {
+      const titleMap: Record<string, string> = {
+        hero: "Hero Principal",
+        services: "Servicios",
+        process: "Proceso de Trabajo",
+        stats: "Estadísticas",
+        cta: "Llamada a la Acción",
+      };
+      const orderMap: Record<string, number> = {
+        hero: 0,
+        services: 1,
+        process: 2,
+        stats: 3,
+        cta: 4,
+      };
+      await db.insert(sections).values({
+        pageId,
+        type: sc.section,
+        title: titleMap[sc.section] ?? sc.section,
+        data: sc.data,
+        settings: {},
+        order: orderMap[sc.section] ?? 0,
+        isActive: true,
+      });
+      console.log(`  - Created section: ${sc.section}`);
+    }
+  }
+
   connection.end();
 }
 

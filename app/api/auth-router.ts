@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createRouter, publicQuery, superadminQuery } from "./middleware";
+import { createRouter, publicQuery, adminQuery, superadminQuery } from "./middleware";
 import {
   findUserByEmail,
   findUserById,
@@ -13,7 +13,8 @@ import {
 } from "./queries/users";
 import { getDb } from "./queries/connection";
 import { users } from "@db/schema";
-import { eq, desc } from "drizzle-orm";
+import * as schema from "@db/schema";
+import { eq, desc, and } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "./lib/auth";
 import { signSessionToken } from "./kimi/session";
 import { getSessionCookieOptions, setCookieHeader } from "./lib/cookies";
@@ -168,5 +169,82 @@ export const authRouter = createRouter({
         .set(data)
         .where(eq(users.id, id));
       return { success: true };
+    }),
+
+  // ── Client Management ──────────────────────────────────────
+
+  listClients: adminQuery.query(async () => {
+    const db = getDb();
+    const allUsers = await db
+      .select()
+      .from(users)
+      .orderBy(desc(users.createdAt));
+
+    const result = [];
+    for (const u of allUsers) {
+      const roles = await getUserRoles(u.id);
+      const isClient = roles.some((r) => r.role === "client");
+      if (!isClient) continue;
+
+      const clientRoles = roles.filter((r) => r.role === "client");
+      const projectRoles = clientRoles.filter((r) => r.scope === "project" && r.projectId);
+      const uploads = await db
+        .select()
+        .from(schema.clientUploads)
+        .where(eq(schema.clientUploads.userId, u.id));
+
+      result.push({
+        ...u,
+        roles: roles.map((r) => ({ role: r.role, scope: r.scope, projectId: r.projectId })),
+        assignedProjects: projectRoles.map((r) => r.projectId),
+        uploadCount: uploads.length,
+      });
+    }
+    return result;
+  }),
+
+  assignProject: superadminQuery
+    .input(
+      z.object({
+        userId: z.number(),
+        projectId: z.number(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      await addUserRole(input.userId, "client", "project", input.projectId);
+      return { success: true };
+    }),
+
+  removeProject: superadminQuery
+    .input(
+      z.object({
+        userId: z.number(),
+        projectId: z.number(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const db = getDb();
+      await db
+        .delete(schema.userRoles)
+        .where(
+          and(
+            eq(schema.userRoles.userId, input.userId),
+            eq(schema.userRoles.role, "client"),
+            eq(schema.userRoles.scope, "project"),
+            eq(schema.userRoles.projectId, input.projectId),
+          ),
+        );
+      return { success: true };
+    }),
+
+  getClientUploads: adminQuery
+    .input(z.object({ userId: z.number() }))
+    .query(async ({ input }) => {
+      const db = getDb();
+      return db
+        .select()
+        .from(schema.clientUploads)
+        .where(eq(schema.clientUploads.userId, input.userId))
+        .orderBy(desc(schema.clientUploads.createdAt));
     }),
 });

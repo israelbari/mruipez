@@ -1,12 +1,20 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
-import { LayoutDashboard, FolderOpen, MessageSquare, FileText, ArrowLeft, Users, Upload, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard, FolderOpen, MessageSquare, FileText,
+  ArrowLeft, Users, Upload, LogOut, Globe, Layers, UserCircle
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
-  { label: 'Panel', path: '/admin', icon: LayoutDashboard },
-  { label: 'Contenido', path: '/admin/content', icon: FileText },
+  { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+  { label: 'Páginas', path: '/admin/pages', icon: Globe },
+  { label: 'Secciones', path: '/admin/sections', icon: Layers },
   { label: 'Proyectos', path: '/admin/projects', icon: FolderOpen },
   { label: 'Mensajes', path: '/admin/messages', icon: MessageSquare },
+];
+
+const managementItems = [
+  { label: 'Clientes', path: '/admin/clients', icon: UserCircle },
 ];
 
 const superadminItems = [
@@ -17,6 +25,11 @@ const superadminItems = [
 export default function AdminLayout() {
   const location = useLocation();
   const { user, isSuperadmin, logout } = useAuth();
+
+  const isActive = (path: string) => {
+    if (path === '/admin') return location.pathname === '/admin';
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <div className="min-h-[100dvh] bg-bg-primary flex">
@@ -29,17 +42,42 @@ export default function AdminLayout() {
           </Link>
         </div>
 
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <div className="flex flex-col gap-1">
+            <div className="px-4 py-2 text-[10px] uppercase tracking-[0.15em] text-text-muted font-semibold">
+              Contenido
+            </div>
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+              const active = isActive(item.path);
               return (
                 <Link
                   key={item.path}
                   to={item.path}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm ${
-                    isActive
+                    active
+                      ? 'bg-bg-tertiary text-accent'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50'
+                  }`}
+                >
+                  <Icon size={18} />
+                  {item.label}
+                </Link>
+              );
+            })}
+
+            <div className="px-4 py-2 mt-4 text-[10px] uppercase tracking-[0.15em] text-text-muted font-semibold">
+              Gestión
+            </div>
+            {managementItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm ${
+                    active
                       ? 'bg-bg-tertiary text-accent'
                       : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50'
                   }`}
@@ -52,16 +90,18 @@ export default function AdminLayout() {
 
             {isSuperadmin && (
               <>
-                <div className="my-2 px-4 text-xs text-text-muted uppercase tracking-wider">Superadmin</div>
+                <div className="px-4 py-2 mt-4 text-[10px] uppercase tracking-[0.15em] text-text-muted font-semibold">
+                  Superadmin
+                </div>
                 {superadminItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
+                  const active = isActive(item.path);
                   return (
                     <Link
                       key={item.path}
                       to={item.path}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm ${
-                        isActive
+                        active
                           ? 'bg-bg-tertiary text-accent'
                           : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50'
                       }`}

@@ -122,7 +122,61 @@ export const contactSubmissions = mysqlTable("contact_submissions", {
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
 
-// Site content CMS table
+// Pages table for dynamic page management
+export const pages = mysqlTable("pages", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  isActive: boolean("isActive").default(true).notNull(),
+  order: int("order").default(0).notNull(),
+  metaTitle: varchar("metaTitle", { length: 255 }),
+  metaDescription: text("metaDescription"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type Page = typeof pages.$inferSelect;
+export type InsertPage = typeof pages.$inferInsert;
+
+// Sections table for dynamic content sections per page
+export const sections = mysqlTable("sections", {
+  id: serial("id").primaryKey(),
+  pageId: int("pageId").notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  title: varchar("title", { length: 255 }),
+  subtitle: varchar("subtitle", { length: 500 }),
+  data: json("data").notNull(),
+  settings: json("settings").$defaultFn(() => ({})),
+  order: int("order").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type Section = typeof sections.$inferSelect;
+export type InsertSection = typeof sections.$inferInsert;
+
+// Section media: images/videos attached to a section
+export const sectionMedia = mysqlTable("section_media", {
+  id: serial("id").primaryKey(),
+  sectionId: int("sectionId").notNull(),
+  url: varchar("url", { length: 500 }).notNull(),
+  type: mysqlEnum("type", ["image", "video"]).default("image").notNull(),
+  order: int("order").default(0).notNull(),
+  caption: varchar("caption", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SectionMedia = typeof sectionMedia.$inferSelect;
+export type InsertSectionMedia = typeof sectionMedia.$inferInsert;
+
+// Site content CMS table (kept for backward compatibility during migration)
 export const siteContent = mysqlTable("site_content", {
   id: serial("id").primaryKey(),
   section: varchar("section", { length: 50 }).notNull().unique(),

@@ -8,11 +8,13 @@ import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
-import AdminContent from '@/pages/admin/AdminContent';
+import AdminPages from '@/pages/admin/AdminPages';
+import AdminSections from '@/pages/admin/AdminSections';
 import AdminProjects from '@/pages/admin/AdminProjects';
 import AdminMessages from '@/pages/admin/AdminMessages';
 import AdminUsers from '@/pages/admin/AdminUsers';
 import AdminUploads from '@/pages/admin/AdminUploads';
+import AdminClients from '@/pages/admin/AdminClients';
 import ClientLayout from '@/components/client/ClientLayout';
 import ClientDashboard from '@/pages/client/ClientDashboard';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -33,11 +35,13 @@ export default function App() {
         }
       >
         <Route index element={<AdminDashboard />} />
-        <Route path="content" element={<AdminContent />} />
+        <Route path="pages" element={<AdminPages />} />
+        <Route path="sections" element={<AdminSections />} />
         <Route path="projects" element={<AdminProjects />} />
         <Route path="messages" element={<AdminMessages />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="uploads" element={<AdminUploads />} />
+        <Route path="clients" element={<AdminClients />} />
       </Route>
 
       {/* Client routes - protected */}

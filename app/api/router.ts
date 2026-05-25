@@ -3,6 +3,8 @@ import { projectRouter } from "./project-router";
 import { contactRouter } from "./contact-router";
 import { contentRouter } from "./content-router";
 import { uploadRouter } from "./upload-router";
+import { pageRouter } from "./page-router";
+import { sectionRouter } from "./section-router";
 import { createRouter, publicQuery } from "./middleware";
 
 export const appRouter = createRouter({
@@ -12,6 +14,8 @@ export const appRouter = createRouter({
   contact: contactRouter,
   content: contentRouter,
   upload: uploadRouter,
+  page: pageRouter,
+  section: sectionRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -4,68 +4,69 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+interface ScrollAnimationOptions {
+  animation?: 'fade-up' | 'fade-in' | 'reveal' | 'zoom' | 'none';
+  delay?: number;
+  duration?: number;
+  y?: number;
+  stagger?: number;
+  children?: string;
+}
+
 export function useScrollAnimation<T extends HTMLElement>(
-  animation: (el: T, gsapInstance: typeof gsap) => gsap.core.Timeline | gsap.core.Tween | void,
-  deps: unknown[] = []
+  options: ScrollAnimationOptions = {}
 ) {
   const ref = useRef<T>(null);
+  const {
+    animation = 'fade-up',
+    delay = 0,
+    duration = 0.8,
+    y = 40,
+    stagger = 0.1,
+    children = '.animate-item',
+  } = options;
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || animation === 'none') return;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      gsap.set(el.children.length > 0 ? el.children : el, { opacity: 1, y: 0, x: 0 });
-      return;
-    }
+    const targets = children ? el.querySelectorAll(children) : el;
+    if (!targets || (targets instanceof NodeList && targets.length === 0)) return;
 
     const ctx = gsap.context(() => {
-      animation(el, gsap);
+      const fromVars: gsap.TweenVars = { opacity: 0 };
+      const toVars: gsap.TweenVars = {
+        opacity: 1,
+        duration,
+        delay,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      };
+
+      if (animation === 'fade-up') {
+        fromVars.y = y;
+        toVars.y = 0;
+      } else if (animation === 'zoom') {
+        fromVars.scale = 0.95;
+        toVars.scale = 1;
+      } else if (animation === 'reveal') {
+        fromVars.clipPath = 'inset(0 0 100% 0)';
+        toVars.clipPath = 'inset(0 0 0% 0)';
+      }
+
+      if (targets instanceof NodeList && targets.length > 1) {
+        gsap.fromTo(targets, fromVars, { ...toVars, stagger });
+      } else {
+        gsap.fromTo(el, fromVars, toVars);
+      }
     }, el);
 
     return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [animation, delay, duration, y, stagger, children]);
 
   return ref;
-}
-
-export function useFadeInUp<T extends HTMLElement>(delay = 0, duration = 0.8, y = 30) {
-  return useScrollAnimation<T>((el, gsap) => {
-    gsap.from(el, {
-      opacity: 0,
-      y,
-      duration,
-      delay,
-      ease: 'expo.out',
-      scrollTrigger: {
-        trigger: el,
-        start: 'top 85%',
-        toggleActions: 'play none none none',
-      },
-    });
-  });
-}
-
-export function useStaggerChildren<T extends HTMLElement>(
-  selector: string,
-  stagger = 0.1,
-  duration = 0.8,
-  y = 30
-) {
-  return useScrollAnimation<T>((el, gsap) => {
-    gsap.from(el.querySelectorAll(selector), {
-      opacity: 0,
-      y,
-      duration,
-      stagger,
-      ease: 'expo.out',
-      scrollTrigger: {
-        trigger: el,
-        start: 'top 80%',
-        toggleActions: 'play none none none',
-      },
-    });
-  });
 }
