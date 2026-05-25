@@ -15,6 +15,7 @@ import AdminMessages from '@/pages/admin/AdminMessages';
 import AdminUsers from '@/pages/admin/AdminUsers';
 import AdminUploads from '@/pages/admin/AdminUploads';
 import AdminClients from '@/pages/admin/AdminClients';
+import AdminClientDetail from '@/pages/admin/AdminClientDetail';
 import ClientLayout from '@/components/client/ClientLayout';
 import ClientDashboard from '@/pages/client/ClientDashboard';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="users" element={<AdminUsers />} />
         <Route path="uploads" element={<AdminUploads />} />
         <Route path="clients" element={<AdminClients />} />
+        <Route path="clients/:id" element={<AdminClientDetail />} />
       </Route>
 
       {/* Client routes - protected */}

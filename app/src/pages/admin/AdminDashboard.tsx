@@ -75,7 +75,7 @@ export default function AdminDashboard() {
   const quickActions = [
     { icon: <FileText className="w-6 h-6 text-accent" />, label: 'Editar Páginas', to: '/admin/pages' },
     { icon: <Layers className="w-6 h-6 text-accent" />, label: 'Gestionar Secciones', to: '/admin/sections' },
-    { icon: <Image className="w-6 h-6 text-accent" />, label: 'Ver Proyectos', to: '/admin/projects' },
+    { icon: <Image className="w-6 h-6 text-accent" />, label: 'Ver Portfolio', to: '/admin/projects' },
     { icon: <Users className="w-6 h-6 text-accent" />, label: 'Ver Clientes', to: '/admin/clients' },
     { icon: <MessageSquare className="w-6 h-6 text-accent" />, label: 'Mensajes', to: '/admin/messages' },
     { icon: <Upload className="w-6 h-6 text-accent" />, label: 'Uploads', to: '/admin/uploads' },
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
         <StatCard
           icon={<FolderOpen className="w-5 h-5" />}
           value={totalProjects}
-          label="Proyectos Totales"
+          label="Portfolio Total"
         />
         <StatCard
           icon={<Star className="w-5 h-5" />}
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
         {/* Recent Projects */}
         <div className="bg-bg-secondary border border-border-custom rounded-xl overflow-hidden">
           <div className="px-6 py-5 flex items-center justify-between border-b border-border-custom">
-            <h2 className="text-base font-semibold text-text-primary">Proyectos Recientes</h2>
+            <h2 className="text-base font-semibold text-text-primary">Portfolio Reciente</h2>
             <span className="text-sm text-text-muted">{totalProjects} en total</span>
           </div>
           <div className="divide-y divide-border-custom">

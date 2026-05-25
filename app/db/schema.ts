@@ -8,6 +8,7 @@ import {
   boolean,
   int,
   json,
+  double,
 } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
@@ -189,3 +190,62 @@ export const siteContent = mysqlTable("site_content", {
 
 export type SiteContent = typeof siteContent.$inferSelect;
 export type InsertSiteContent = typeof siteContent.$inferInsert;
+
+// Proyectos individuales creados para clientes específicos
+export const clientProjects = mysqlTable("client_projects", {
+  id: serial("id").primaryKey(),
+  clientId: int("clientId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  status: varchar("status", { length: 50 }).default("active").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type ClientProject = typeof clientProjects.$inferSelect;
+export type InsertClientProject = typeof clientProjects.$inferInsert;
+
+// Comentarios o notas agregadas en un proyecto de cliente
+export const clientComments = mysqlTable("client_comments", {
+  id: serial("id").primaryKey(),
+  projectId: int("projectId").notNull(),
+  content: text("content").notNull(),
+  visible: boolean("visible").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ClientComment = typeof clientComments.$inferSelect;
+export type InsertClientComment = typeof clientComments.$inferInsert;
+
+// Registro de horas para los proyectos de cliente
+export const clientTimeEntries = mysqlTable("client_time_entries", {
+  id: serial("id").primaryKey(),
+  projectId: int("projectId").notNull(),
+  description: varchar("description", { length: 500 }).notNull(),
+  hours: double("hours").notNull(),
+  date: timestamp("date").defaultNow().notNull(),
+  visible: boolean("visible").default(false).notNull(),
+  billable: boolean("billable").default(true).notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ClientTimeEntry = typeof clientTimeEntries.$inferSelect;
+export type InsertClientTimeEntry = typeof clientTimeEntries.$inferInsert;
+
+// Archivos adjuntos o imágenes subidas en el proyecto de cliente
+export const clientProjectMedia = mysqlTable("client_project_media", {
+  id: serial("id").primaryKey(),
+  projectId: int("projectId").notNull(),
+  url: varchar("url", { length: 500 }).notNull(),
+  type: mysqlEnum("type", ["image", "video"]).default("image").notNull(),
+  visible: boolean("visible").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ClientProjectMedia = typeof clientProjectMedia.$inferSelect;
+export type InsertClientProjectMedia = typeof clientProjectMedia.$inferInsert;
+

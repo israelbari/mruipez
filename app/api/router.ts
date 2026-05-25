@@ -5,6 +5,7 @@ import { contentRouter } from "./content-router";
 import { uploadRouter } from "./upload-router";
 import { pageRouter } from "./page-router";
 import { sectionRouter } from "./section-router";
+import { clientRouter } from "./client-router";
 import { createRouter, publicQuery } from "./middleware";
 
 export const appRouter = createRouter({
@@ -16,6 +17,7 @@ export const appRouter = createRouter({
   upload: uploadRouter,
   page: pageRouter,
   section: sectionRouter,
+  client: clientRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -9,7 +9,7 @@ const navItems = [
   { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { label: 'Páginas', path: '/admin/pages', icon: Globe },
   { label: 'Secciones', path: '/admin/sections', icon: Layers },
-  { label: 'Proyectos', path: '/admin/projects', icon: FolderOpen },
+  { label: 'Portfolio', path: '/admin/projects', icon: FolderOpen },
   { label: 'Mensajes', path: '/admin/messages', icon: MessageSquare },
 ];
 

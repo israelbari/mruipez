@@ -1,64 +1,87 @@
 import { useState } from 'react';
 import { trpc } from '@/providers/trpc';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Search, FolderOpen, Upload, Power, UserCheck, Loader2, Eye } from 'lucide-react';
+import { Search, FolderOpen, Loader2, Eye, Plus, Trash2, UserCheck, Power, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 
 export default function AdminClients() {
+  const navigate = useNavigate();
   const utils = trpc.useUtils();
-  const { data: clients, isLoading } = trpc.auth.listClients.useQuery();
-  const { data: projects } = trpc.project.list.useQuery();
+  
+  // Use our new modular client endpoints
+  const { data: clients, isLoading } = trpc.client.listClients.useQuery();
+
+  const createMutation = trpc.client.createClient.useMutation({
+    onSuccess: () => {
+      utils.client.listClients.invalidate();
+      toast.success('Cliente creado correctamente');
+      setIsFormOpen(false);
+      resetForm();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const deleteMutation = trpc.client.deleteClient.useMutation({
+    onSuccess: () => {
+      utils.client.listClients.invalidate();
+      toast.success('Cliente eliminado correctamente');
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const updateStatusMutation = trpc.auth.updateUser.useMutation({
+    onSuccess: () => {
+      utils.client.listClients.invalidate();
+      toast.success('Estado del cliente actualizado');
+    },
+  });
 
   const [search, setSearch] = useState('');
-  const [selectedClient, setSelectedClient] = useState<NonNullable<typeof clients>[number] | null>(null);
-  const [showDetail, setShowDetail] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
 
-  const assignMutation = trpc.auth.assignProject.useMutation({
-    onSuccess: () => {
-      utils.auth.listClients.invalidate();
-      toast.success('Proyecto asignado');
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const resetForm = () => {
+    setForm({ name: '', email: '', password: '' });
+  };
 
-  const removeProjectMutation = trpc.auth.removeProject.useMutation({
-    onSuccess: () => {
-      utils.auth.listClients.invalidate();
-      toast.success('Proyecto desasignado');
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || !form.password.trim()) {
+      toast.error('Todos los campos son obligatorios');
+      return;
+    }
+    createMutation.mutate({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      password: form.password.trim(),
+    });
+  };
 
-  const updateUserMutation = trpc.auth.updateUser.useMutation({
-    onSuccess: () => {
-      utils.auth.listClients.invalidate();
-      toast.success('Estado actualizado');
-    },
-  });
+  const handleDelete = (id: number, name: string) => {
+    if (confirm(`¿Estás seguro de que deseas eliminar a ${name}? Se perderán todos sus proyectos y archivos.`)) {
+      deleteMutation.mutate({ id });
+    }
+  };
+
+  const toggleStatus = (id: number, currentStatus: boolean) => {
+    updateStatusMutation.mutate({ id, isActive: !currentStatus });
+  };
 
   const filtered = clients?.filter((c) => {
     const s = search.toLowerCase();
     return c.name?.toLowerCase().includes(s) || c.email.toLowerCase().includes(s);
   });
 
-  const openDetail = (client: NonNullable<typeof clients>[number]) => {
-    setSelectedClient(client);
-    setShowDetail(true);
-  };
-
-  const toggleStatus = (client: NonNullable<typeof clients>[number]) => {
-    updateUserMutation.mutate({ id: client.id, isActive: !client.isActive });
-  };
-
-  const isAssigned = (client: NonNullable<typeof clients>[number], projectId: number) => {
-    return client.assignedProjects?.includes(projectId);
-  };
+  const inputClass = "w-full h-11 bg-bg-primary border border-border-custom rounded px-3 text-text-primary text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition-colors";
+  const labelClass = "text-xs uppercase tracking-wider text-text-secondary block mb-2";
 
   if (isLoading) {
     return (
@@ -72,19 +95,27 @@ export default function AdminClients() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display text-text-primary text-3xl">Clientes</h1>
+          <h1 className="font-display text-text-primary text-3xl">Gestión de Clientes</h1>
           <p className="text-sm text-text-secondary mt-1">
             {clients?.length ?? 0} clientes registrados
           </p>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-          <input
-            className="pl-9 w-[260px] h-10 bg-bg-primary border border-border-custom rounded text-text-primary text-sm focus:border-accent focus:outline-none"
-            placeholder="Buscar cliente..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <input
+              className="pl-9 w-[260px] h-10 bg-bg-secondary border border-border-custom rounded text-text-primary text-sm focus:border-accent focus:outline-none"
+              placeholder="Buscar cliente..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={() => { resetForm(); setIsFormOpen(true); }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-text-primary text-bg-primary text-sm font-medium rounded hover:bg-accent transition-colors"
+          >
+            <Plus size={16} /> Nuevo Cliente
+          </button>
         </div>
       </div>
 
@@ -95,7 +126,7 @@ export default function AdminClients() {
               <th className="text-left px-6 py-3">Cliente</th>
               <th className="text-left px-6 py-3">Email</th>
               <th className="text-left px-6 py-3">Proyectos</th>
-              <th className="text-left px-6 py-3">Uploads</th>
+              <th className="text-left px-6 py-3">Archivos</th>
               <th className="text-left px-6 py-3">Estado</th>
               <th className="text-left px-6 py-3">Acciones</th>
             </tr>
@@ -120,19 +151,16 @@ export default function AdminClients() {
                 </td>
                 <td className="px-6 py-4 text-text-secondary">{client.email}</td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 text-text-primary">
                     <FolderOpen size={14} className="text-accent" />
-                    <span className="text-text-primary">{client.assignedProjects?.length ?? 0}</span>
+                    <span>{client.projectCount}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-1.5">
-                    <Upload size={14} className="text-text-secondary" />
-                    <span className="text-text-secondary">{client.uploadCount ?? 0}</span>
-                  </div>
+                <td className="px-6 py-4 text-text-secondary">
+                  <span>{client.mediaCount} archivos</span>
                 </td>
                 <td className="px-6 py-4">
-                  <button onClick={() => toggleStatus(client)} className="flex items-center gap-1.5 text-xs">
+                  <button onClick={() => toggleStatus(client.id, client.isActive)} className="flex items-center gap-1.5 text-xs">
                     {client.isActive ? (
                       <><UserCheck size={14} className="text-emerald-400" /> <span className="text-emerald-400">Activo</span></>
                     ) : (
@@ -141,9 +169,22 @@ export default function AdminClients() {
                   </button>
                 </td>
                 <td className="px-6 py-4">
-                  <button onClick={() => openDetail(client)} className="p-2 text-text-secondary hover:text-accent transition-colors rounded hover:bg-bg-tertiary">
-                    <Eye size={16} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => navigate(`/admin/clients/${client.id}`)}
+                      className="p-2 text-text-secondary hover:text-accent transition-colors rounded hover:bg-bg-tertiary"
+                      title="Ver detalle del cliente"
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(client.id, client.name || client.email)}
+                      className="p-2 text-text-secondary hover:text-red-400 transition-colors rounded hover:bg-bg-tertiary"
+                      title="Eliminar cliente"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -151,64 +192,56 @@ export default function AdminClients() {
         </table>
       </div>
 
-      {/* Client Detail Dialog */}
-      <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="bg-bg-secondary border-border-custom text-text-primary max-w-2xl max-h-[80vh] overflow-y-auto">
+      {/* ============ Create Dialog ============ */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="bg-bg-secondary border-border-custom text-text-primary max-w-md">
           <DialogHeader>
             <DialogTitle className="text-text-primary font-display text-xl">
-              {selectedClient?.name || selectedClient?.email}
+              Registrar Nuevo Cliente
             </DialogTitle>
           </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-bg-primary border border-border-custom rounded-lg p-4 text-center">
-                <FolderOpen className="w-5 h-5 text-accent mx-auto mb-2" />
-                <p className="text-2xl font-display text-text-primary">{selectedClient?.assignedProjects?.length ?? 0}</p>
-                <p className="text-xs text-text-secondary">Proyectos</p>
-              </div>
-              <div className="bg-bg-primary border border-border-custom rounded-lg p-4 text-center">
-                <Upload className="w-5 h-5 text-text-secondary mx-auto mb-2" />
-                <p className="text-2xl font-display text-text-primary">{selectedClient?.uploadCount ?? 0}</p>
-                <p className="text-xs text-text-secondary">Uploads</p>
-              </div>
-              <div className="bg-bg-primary border border-border-custom rounded-lg p-4 text-center">
-                <Power className="w-5 h-5 text-text-secondary mx-auto mb-2" />
-                <p className="text-lg font-display text-text-primary">{selectedClient?.isActive ? 'Activo' : 'Inactivo'}</p>
-                <p className="text-xs text-text-secondary">Estado</p>
-              </div>
-            </div>
-
+          <form onSubmit={handleSave} className="space-y-4 py-4">
             <div>
-              <h3 className="text-sm font-medium text-text-primary mb-3">Asignar Proyectos</h3>
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                {projects?.map((project) => {
-                  const assigned = selectedClient && isAssigned(selectedClient, project.id);
-                  return (
-                    <button
-                      key={project.id}
-                      onClick={() => {
-                        if (!selectedClient) return;
-                        if (assigned) {
-                          removeProjectMutation.mutate({ userId: selectedClient.id, projectId: project.id });
-                        } else {
-                          assignMutation.mutate({ userId: selectedClient.id, projectId: project.id });
-                        }
-                      }}
-                      className={`flex items-center gap-2 px-3 py-2 rounded text-sm border transition-colors ${
-                        assigned
-                          ? 'border-accent bg-accent/10 text-accent'
-                          : 'border-border-custom text-text-secondary hover:border-text-secondary'
-                      }`}
-                    >
-                      <img src={project.image} alt="" className="w-8 h-8 object-cover rounded" />
-                      <span className="truncate">{project.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <label className={labelClass}>Nombre Completo</label>
+              <input
+                className={inputClass}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Juan Pérez"
+                required
+              />
             </div>
-          </div>
+            <div>
+              <label className={labelClass}>Email</label>
+              <input
+                type="email"
+                className={inputClass}
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="cliente@correo.com"
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Contraseña</label>
+              <input
+                type="password"
+                className={inputClass}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="******"
+                required
+              />
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="ghost" onClick={() => setIsFormOpen(false)} className="text-text-secondary">
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending} className="bg-accent text-white hover:bg-accent/90">
+                {createMutation.isPending ? 'Guardando...' : 'Crear Cliente'}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

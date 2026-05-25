@@ -32,7 +32,7 @@ export default function AdminProjects() {
   const createMutation = trpc.project.create.useMutation({
     onSuccess: () => {
       utils.project.list.invalidate();
-      toast.success('Proyecto creado correctamente');
+      toast.success('Portfolio creado correctamente');
     },
     onError: (err) => toast.error('Error al crear: ' + err.message),
   });
@@ -40,7 +40,7 @@ export default function AdminProjects() {
   const updateMutation = trpc.project.update.useMutation({
     onSuccess: () => {
       utils.project.list.invalidate();
-      toast.success('Proyecto actualizado correctamente');
+      toast.success('Portfolio actualizado correctamente');
     },
     onError: (err) => toast.error('Error al actualizar: ' + err.message),
   });
@@ -48,7 +48,7 @@ export default function AdminProjects() {
   const deleteMutation = trpc.project.delete.useMutation({
     onSuccess: () => {
       utils.project.list.invalidate();
-      toast.success('Proyecto eliminado');
+      toast.success('Portfolio eliminado');
     },
     onError: (err) => toast.error('Error al eliminar: ' + err.message),
   });
@@ -217,7 +217,7 @@ export default function AdminProjects() {
     return (
       <div className="max-w-3xl">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="font-display text-text-primary text-3xl">{mode === 'edit' ? 'Editar Proyecto' : 'Nuevo Proyecto'}</h1>
+          <h1 className="font-display text-text-primary text-3xl">{mode === 'edit' ? 'Editar Portfolio' : 'Nuevo Portfolio'}</h1>
           <button onClick={() => { setMode('list'); setForm(emptyForm); }} className="text-text-secondary hover:text-text-primary transition-colors">
             <X size={20} />
           </button>
@@ -373,9 +373,9 @@ export default function AdminProjects() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-text-primary text-3xl">Proyectos</h1>
+        <h1 className="font-display text-text-primary text-3xl">Portfolio</h1>
         <button onClick={() => setMode('create')} className="flex items-center gap-2 px-4 py-2.5 bg-text-primary text-bg-primary text-sm font-medium rounded hover:bg-accent transition-colors">
-          <Plus size={16} /> Nuevo Proyecto
+          <Plus size={16} /> Nuevo Portfolio
         </button>
       </div>
 
@@ -384,7 +384,7 @@ export default function AdminProjects() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-custom text-text-muted uppercase text-xs tracking-wider">
-                <th className="text-left px-6 py-3">Proyecto</th>
+                <th className="text-left px-6 py-3">Portfolio</th>
                 <th className="text-left px-6 py-3">Categoría</th>
                 <th className="text-left px-6 py-3">Assets</th>
                 <th className="text-left px-6 py-3">Orden</th>
