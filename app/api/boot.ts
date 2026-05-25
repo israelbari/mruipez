@@ -59,14 +59,16 @@ app.post("/api/upload", async (c) => {
     const file = formData.get("file") as File | null;
     if (!file) return c.json({ error: "No file provided" }, 400);
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm", "video/quicktime"];
-    if (!allowedTypes.includes(file.type)) return c.json({ error: "Invalid file type" }, 400);
+    const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+    const isImage = file.type.startsWith("image/") || ["jpg", "jpeg", "png", "webp", "gif"].includes(ext);
+    const isVideo = file.type.startsWith("video/") || ["mp4", "webm", "mov", "quicktime"].includes(ext);
+    if (!isImage && !isVideo) {
+      return c.json({ error: "El archivo debe ser una imagen (JPG, PNG, WEBP, GIF) o un video (MP4, WEBM, MOV)" }, 400);
+    }
 
-    const ext = file.name.split(".").pop() || "bin";
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 10);
     const filename = `${timestamp}-${random}.${ext}`;
-    const isVideo = file.type.startsWith("video/");
     const subDir = isVideo ? "videos" : "images";
     const uploadDir = join(PUBLIC_DIR, "uploads", subDir);
 
