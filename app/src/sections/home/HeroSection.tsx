@@ -23,7 +23,7 @@ export default function HeroSection() {
     }
 
     const ctx = gsap.context(() => {
-      gsap.from(el.querySelector('.hero-bg'), {
+      gsap.from(document.querySelector('.hero-bg'), {
         scale: 1.05,
         duration: 2,
         ease: 'expo.out',
@@ -100,37 +100,11 @@ export default function HeroSection() {
       ref={sectionRef}
       className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* Background Image / Video */}
-      <div className="hero-bg absolute inset-0">
-        {data.backgroundImage.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) ? (
-          <video
-            src={data.backgroundImage}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover object-center"
-          />
-        ) : (
-          <img
-            src={data.backgroundImage}
-            alt="Hero background"
-            className="w-full h-full object-cover object-center"
-          />
-        )}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(18, 18, 18, 0.4) 0%, rgba(18, 18, 18, 0.85) 100%)',
-          }}
-        />
-      </div>
-
       {/* Content */}
       <div className="relative z-10 text-center max-w-3xl px-6 pt-16">
         <span
           className="hero-label font-sans font-medium uppercase tracking-widest text-accent block mb-6"
-          style={{ fontSize: '0.6875rem', letterSpacing: '0.12em' }}
+          style={{ fontSize: '0.6875rem', letterSpacing: '0.12em', textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}
         >
           {data.label}
         </span>
@@ -141,6 +115,7 @@ export default function HeroSection() {
             fontSize: 'clamp(3rem, 6vw, 5rem)',
             letterSpacing: '-0.02em',
             lineHeight: 1.1,
+            textShadow: '0 4px 24px rgba(0,0,0,0.7)',
           }}
         >
           {data.heading}
@@ -148,7 +123,7 @@ export default function HeroSection() {
 
         <p
           className="hero-sub font-sans text-text-secondary mt-6 mx-auto max-w-lg"
-          style={{ fontSize: 'clamp(0.875rem, 1vw, 1rem)', lineHeight: 1.7 }}
+          style={{ fontSize: 'clamp(0.875rem, 1vw, 1rem)', lineHeight: 1.7, textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}
         >
           {data.subtext}
         </p>
@@ -156,7 +131,7 @@ export default function HeroSection() {
         <Link
           to={data.ctaLink}
           className="hero-cta inline-block mt-12 font-sans font-medium uppercase tracking-widest text-text-primary border-b border-text-primary pb-1 transition-colors duration-300 hover:text-accent hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
-          style={{ fontSize: '0.875rem', letterSpacing: '0.06em' }}
+          style={{ fontSize: '0.875rem', letterSpacing: '0.06em', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
         >
           {data.ctaText}
         </Link>

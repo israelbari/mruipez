@@ -1,14 +1,25 @@
-import { useLocalProjects, useLocalMessages } from '@/hooks/useLocalProjects';
-import { FolderOpen, MessageSquare, Eye, Star } from 'lucide-react';
+import { useProjects } from '@/hooks/useProjects';
+import { trpc } from '@/providers/trpc';
+import { FolderOpen, MessageSquare, Eye, Star, Loader2 } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const { projects } = useLocalProjects();
-  const { messages } = useLocalMessages();
+  const { projects, isLoading: projectsLoading } = useProjects();
+  const { data: messages, isLoading: messagesLoading } = trpc.contact.list.useQuery();
 
   const totalProjects = projects.length;
   const featuredProjects = projects.filter(p => p.featured).length;
-  const totalMessages = messages.length;
-  const unreadMessages = messages.filter(m => !m.read).length;
+  const totalMessages = messages?.length ?? 0;
+  const unreadMessages = messages?.filter(m => !m.read).length ?? 0;
+
+  const isLoading = projectsLoading || messagesLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-accent" size={32} />
+      </div>
+    );
+  }
 
   const stats = [
     { label: 'Total Proyectos', value: totalProjects, icon: FolderOpen, color: 'text-accent' },

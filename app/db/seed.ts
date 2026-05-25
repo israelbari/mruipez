@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import { createConnection } from "mysql2";
-import { projects, siteContent } from "./schema";
+import { projects, projectAssets, siteContent } from "./schema";
 import { eq } from "drizzle-orm";
 
 const connectionString = process.env.DATABASE_URL;
@@ -34,10 +34,29 @@ async function seed() {
     console.log(`Found ${existing.length} existing projects. Skipping project seed.`);
   } else {
     for (const p of seedProjects) {
-      await db.insert(projects).values(p);
-      console.log(`  - ${p.name}`);
+      const result = await db.insert(projects).values(p);
+      const projectId = Number(result[0].insertId);
+      console.log(`  - ${p.name} (id=${projectId})`);
+
+      // Create asset for cover image
+      await db.insert(projectAssets).values({
+        projectId,
+        url: p.image,
+        type: "image",
+        order: 0,
+      });
+
+      // Create asset for video if present
+      if (p.video) {
+        await db.insert(projectAssets).values({
+          projectId,
+          url: p.video,
+          type: "video",
+          order: 1,
+        });
+      }
     }
-    console.log(`Seeded ${seedProjects.length} projects.`);
+    console.log(`Seeded ${seedProjects.length} projects with assets.`);
   }
 
   // Seed site content (CMS)

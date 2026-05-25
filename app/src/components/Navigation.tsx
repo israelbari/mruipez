@@ -54,18 +54,18 @@ export default function Navigation() {
         }}
       >
         <div
-          className="h-20 flex items-center justify-between px-6 md:px-8"
+          className="h-32 flex items-center justify-between px-6 md:px-8"
           style={{
-            backgroundColor: scrolled ? 'rgba(255, 255, 255, 0.98)' : 'rgba(255, 255, 255, 1)',
+            backgroundColor: scrolled ? 'rgba(18, 18, 18, 0.85)' : 'rgba(18, 18, 18, 0.2)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            transition: 'background-color 0.3s ease',
-            borderBottom: scrolled ? '1px solid rgba(0,0,0,0.08)' : '1px solid transparent',
+            transition: 'background-color 0.3s ease, border-color 0.3s ease',
+            borderBottom: scrolled ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid transparent',
           }}
         >
           {/* Logo SVG */}
           <Link to="/" className="flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
-            <img src="/logo.svg" alt="MRUIPEZ ARCHVIZ" className="h-16 w-auto" />
+            <img src="/logo.svg" alt="MRUIPEZ ARCHVIZ" className="h-28 w-auto" />
           </Link>
 
           {/* Desktop Nav Links */}
@@ -74,11 +74,11 @@ export default function Navigation() {
               <Link
                 key={link.path}
                 to={link.path}
-                className="font-sans uppercase tracking-widest transition-colors duration-300 hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary rounded"
+                className="font-sans uppercase tracking-widest transition-colors duration-300 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary rounded"
                 style={{
                   fontSize: '0.8125rem',
                   letterSpacing: '0.06em',
-                  color: location.pathname === link.path ? '#121212' : '#868686',
+                  color: location.pathname === link.path ? '#C9CACA' : '#868686',
                   fontWeight: 400,
                 }}
               >
@@ -88,10 +88,10 @@ export default function Navigation() {
             {true && (
               <Link
                 to="/admin"
-                className="flex items-center gap-2 font-sans uppercase tracking-widest text-[#121212] transition-colors duration-300 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+                className="flex items-center gap-2 font-sans uppercase tracking-widest text-[#C9CACA] transition-colors duration-300 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
                 style={{ fontSize: '0.8125rem', letterSpacing: '0.06em', fontWeight: 400 }}
               >
-                <LayoutDashboard size={14} />
+                <LayoutDashboard size={14} className="text-text-secondary group-hover:text-accent" />
                 Admin
               </Link>
             )}
@@ -99,7 +99,7 @@ export default function Navigation() {
 
           {/* Mobile Hamburger */}
           <button
-            className="md:hidden text-[#121212] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
+            className="md:hidden text-[#C9CACA] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
             onClick={() => setMobileOpen(true)}
             aria-label="Abrir menú"
           >
@@ -110,9 +110,9 @@ export default function Navigation() {
 
       {/* Mobile Menu Overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center" style={{ backgroundColor: 'rgba(18, 18, 18, 0.98)' }}>
           <button
-            className="absolute top-5 right-6 text-[#121212] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
+            className="absolute top-5 right-6 text-[#C9CACA] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
             onClick={() => setMobileOpen(false)}
             aria-label="Cerrar menú"
           >
@@ -126,7 +126,7 @@ export default function Navigation() {
                 to={link.path}
                 className="font-sans text-4xl uppercase tracking-widest transition-colors duration-300 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded px-2"
                 style={{
-                  color: location.pathname === link.path ? '#121212' : '#868686',
+                  color: location.pathname === link.path ? '#C9CACA' : '#868686',
                   fontWeight: 300,
                   letterSpacing: '0.1em',
                 }}
@@ -138,7 +138,7 @@ export default function Navigation() {
             {true && (
               <Link
                 to="/admin"
-                className="font-sans text-4xl uppercase tracking-widest text-[#121212] transition-colors duration-300 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded px-2 flex items-center gap-3"
+                className="font-sans text-4xl uppercase tracking-widest text-[#C9CACA] transition-colors duration-300 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded px-2 flex items-center gap-3"
                 style={{ fontWeight: 300, letterSpacing: '0.1em' }}
                 onClick={() => setMobileOpen(false)}
               >

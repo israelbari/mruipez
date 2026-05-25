@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useLocalProjects } from '@/hooks/useLocalProjects';
+import { useProjects } from '@/hooks/useProjects';
 import ProjectCard from '@/components/ProjectCard';
 import LightboxModal from '@/components/LightboxModal';
 import VideoPlayer from '@/components/VideoPlayer';
@@ -11,12 +11,12 @@ gsap.registerPlugin(ScrollTrigger);
 const categories = ['Todos', 'Residencial', 'Comercial', 'Interiores', 'Exteriores'];
 
 export default function PortfolioGrid() {
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeFilter, setActiveFilter] = useState('Todos');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const { projects } = useLocalProjects();
+  const { projects } = useProjects();
 
   const filteredProjects = projects.filter((p) => {
     if (activeFilter === 'Todos') return true;
@@ -94,8 +94,7 @@ export default function PortfolioGrid() {
       <LightboxModal
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
-        currentIndex={lightboxIndex}
-        onNavigate={setLightboxIndex}
+        initialProjectIndex={lightboxIndex}
         projects={filteredProjects}
       />
     </>

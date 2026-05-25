@@ -95,6 +95,19 @@ export const projects = mysqlTable("projects", {
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = typeof projects.$inferInsert;
 
+// Project assets: multiple images/videos per project
+export const projectAssets = mysqlTable("project_assets", {
+  id: serial("id").primaryKey(),
+  projectId: int("projectId").notNull(),
+  url: varchar("url", { length: 500 }).notNull(),
+  type: mysqlEnum("type", ["image", "video"]).notNull(),
+  order: int("order").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ProjectAsset = typeof projectAssets.$inferSelect;
+export type InsertProjectAsset = typeof projectAssets.$inferInsert;
+
 // Contact submissions table
 export const contactSubmissions = mysqlTable("contact_submissions", {
   id: serial("id").primaryKey(),

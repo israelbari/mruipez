@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createRouter, publicQuery, authedQuery, superadminQuery } from "./middleware";
+import { createRouter, publicQuery, superadminQuery } from "./middleware";
 import {
   findUserByEmail,
   findUserById,
@@ -9,28 +9,21 @@ import {
   updateUserPassword,
   getUserWithRoles,
   getUserRoles,
-  createTwoFactorCode,
-  findValidCode,
-  markCodeUsed,
   addUserRole,
 } from "./queries/users";
 import { getDb } from "./queries/connection";
-import { users, userRoles } from "@db/schema";
+import { users } from "@db/schema";
 import { eq, desc } from "drizzle-orm";
-import { hashPassword, verifyPassword, generateTwoFactorCode } from "./lib/auth";
+import { hashPassword, verifyPassword } from "./lib/auth";
 import { signSessionToken } from "./kimi/session";
 import { getSessionCookieOptions, setCookieHeader } from "./lib/cookies";
 import { Session } from "@contracts/constants";
 import { env } from "./lib/env";
 
+
 const loginInput = z.object({
   email: z.string().email(),
   password: z.string().min(1),
-});
-
-const verify2FAInput = z.object({
-  email: z.string().email(),
-  code: z.string().length(6),
 });
 
 const registerInput = z.object({
@@ -47,7 +40,7 @@ const resetPasswordInput = z.object({
 export const authRouter = createRouter({
   login: publicQuery
     .input(loginInput)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const user = await findUserByEmail(input.email);
       if (!user) {
         throw new TRPCError({
@@ -67,39 +60,6 @@ export const authRouter = createRouter({
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Credenciales inválidas",
-        });
-      }
-
-      // Generate and store 2FA code
-      const code = generateTwoFactorCode();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-      await createTwoFactorCode(input.email, code, expiresAt);
-
-      // Log code for mock email (replace with real SMTP later)
-      console.log(`[2FA] Código para ${input.email}: ${code}`);
-
-      return { step: "2fa", email: input.email };
-    }),
-
-  verify2FA: publicQuery
-    .input(verify2FAInput)
-    .mutation(async ({ input, ctx }) => {
-      const record = await findValidCode(input.email, input.code);
-      if (!record) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Código inválido o expirado",
-        });
-      }
-
-      await markCodeUsed(record.id);
-
-      const user = await findUserByEmail(input.email);
-      if (!user) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Usuario no encontrado",
         });
       }
 

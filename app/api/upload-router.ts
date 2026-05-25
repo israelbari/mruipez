@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createRouter, publicQuery, authedQuery, superadminQuery } from "./middleware";
+import { createRouter, authedQuery, superadminQuery } from "./middleware";
 import {
   createUpload,
   getUploadsByUser,
@@ -11,6 +11,53 @@ import {
 } from "./queries/uploads";
 
 export const uploadRouter = createRouter({
+  // Public/Authed: Get Presigned Upload URL for Cloudflare R2 direct uploads
+  getPresignedUrl: authedQuery
+    .input(
+      z.object({
+        filename: z.string().min(1),
+        fileType: z.string().min(1),
+        isVideo: z.boolean().default(false),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { isR2Configured, getUploadPresignedUrl, getR2PublicUrl } = await import("./lib/r2");
+      
+      if (!isR2Configured()) {
+        return {
+          uploadUrl: "",
+          publicUrl: "",
+          key: "",
+          useFallback: true,
+        };
+      }
+
+      const ext = input.filename.split(".").pop() || "bin";
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(2, 10);
+      const subDir = input.isVideo ? "videos" : "images";
+      const key = `uploads/${subDir}/${timestamp}-${random}.${ext}`;
+
+      try {
+        const uploadUrl = await getUploadPresignedUrl(key, input.fileType);
+        const publicUrl = getR2PublicUrl(key);
+        return {
+          uploadUrl,
+          publicUrl,
+          key,
+          useFallback: false,
+        };
+      } catch (err) {
+        console.error("Failed to generate presigned R2 URL:", err);
+        return {
+          uploadUrl: "",
+          publicUrl: "",
+          key: "",
+          useFallback: true,
+        };
+      }
+    }),
+
   // Client: create upload
   create: authedQuery
     .input(

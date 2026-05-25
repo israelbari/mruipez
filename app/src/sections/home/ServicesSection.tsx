@@ -56,7 +56,7 @@ export default function ServicesSection() {
 
   if (isLoading || !content) {
     return (
-      <section className="bg-bg-primary py-24 md:py-32 lg:py-40">
+      <section className="py-24 md:py-32 lg:py-40">
         <div className="max-w-content mx-auto px-4 md:px-6 space-y-8">
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-12 w-96" />
@@ -81,8 +81,8 @@ export default function ServicesSection() {
   };
 
   return (
-    <section ref={ref} className="bg-bg-primary py-24 md:py-32 lg:py-40">
-      <div className="max-w-content mx-auto px-4 md:px-6">
+    <section ref={ref} className="py-24 md:py-32 lg:py-40 relative">
+      <div className="relative z-10 max-w-content mx-auto px-4 md:px-6">
         {/* Section Header */}
         <div>
           <span

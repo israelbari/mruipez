@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CheckCircle, ChevronDown } from 'lucide-react';
-import { useLocalMessages } from '@/hooks/useLocalProjects';
+import { trpc } from '@/providers/trpc';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,7 +10,15 @@ export default function ContactForm() {
   const ref = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({ name: '', email: '', projectType: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const { add } = useLocalMessages();
+
+  const submitMutation = trpc.contact.submit.useMutation({
+    onSuccess: () => {
+      setStatus('success');
+    },
+    onError: () => {
+      setStatus('error');
+    }
+  });
 
   useEffect(() => {
     const el = ref.current;
@@ -31,12 +39,7 @@ export default function ContactForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
-    try {
-      add(formData);
-      setStatus('success');
-    } catch {
-      setStatus('error');
-    }
+    submitMutation.mutate(formData);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

@@ -160,6 +160,13 @@ app.get("/logo.svg", async (c) => {
   return c.body(await readFile(filePath));
 });
 
+app.get("/acceso.html", async (c) => {
+  const filePath = join(DIST_DIR, "acceso.html");
+  if (!existsSync(filePath)) return c.json({ error: "Not found" }, 404);
+  c.header("Content-Type", "text/html");
+  return c.body(await readFile(filePath));
+});
+
 // SPA fallback - serve index.html for ALL remaining routes
 app.get("*", async (c) => {
   const indexPath = join(DIST_DIR, "index.html");

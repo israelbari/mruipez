@@ -1,5 +1,13 @@
 import { useState, useCallback } from 'react';
 
+export interface LocalProjectAsset {
+  id: number;
+  projectId?: number;
+  url: string;
+  type: 'image' | 'video';
+  order: number;
+}
+
 export interface LocalProject {
   id: number;
   name: string;
@@ -11,24 +19,25 @@ export interface LocalProject {
   order: number;
   featured: boolean;
   createdAt: Date;
+  assets: LocalProjectAsset[];
 }
 
 const STORAGE_KEY = 'mruipez-projects';
 const MESSAGES_KEY = 'mruipez-messages';
 
 const defaultProjects: LocalProject[] = [
-  { id: 1, name: 'Villa Serena', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-01.jpg', aspect: '16:9', order: 1, featured: true, createdAt: new Date() },
-  { id: 2, name: 'Atrium House', category: 'Residential', subcategory: 'Interiors', image: '/images/project-02.jpg', aspect: '3:4', order: 2, featured: true, createdAt: new Date() },
-  { id: 3, name: 'Casa del Sol', category: 'Residential', subcategory: 'Interiors', image: '/images/project-03.jpg', aspect: '3:4', order: 3, featured: true, createdAt: new Date() },
-  { id: 4, name: 'Loft Industrial', category: 'Residential', subcategory: 'Interiors', image: '/images/project-04.jpg', aspect: '3:4', order: 4, featured: true, createdAt: new Date() },
-  { id: 5, name: 'Penthouse 360', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-05.jpg', aspect: '16:9', order: 5, featured: true, createdAt: new Date() },
-  { id: 6, name: 'Jardin Interior', category: 'Commercial', subcategory: 'Interiors', image: '/images/project-06.jpg', aspect: '3:4', order: 6, featured: true, createdAt: new Date() },
-  { id: 7, name: 'Marina Residences', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-07.jpg', aspect: '16:9', order: 7, featured: false, createdAt: new Date() },
-  { id: 8, name: 'Office Horizon', category: 'Commercial', subcategory: 'Interiors', image: '/images/project-08.jpg', aspect: '3:4', order: 8, featured: false, createdAt: new Date() },
-  { id: 9, name: 'Casa Blanca', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-09.jpg', aspect: '3:4', order: 9, featured: false, createdAt: new Date() },
-  { id: 10, name: 'Urban Spa', category: 'Commercial', subcategory: 'Interiors', image: '/images/project-10.jpg', aspect: '3:4', order: 10, featured: false, createdAt: new Date() },
-  { id: 11, name: 'Mountain Retreat', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-11.jpg', aspect: '16:9', order: 11, featured: false, createdAt: new Date() },
-  { id: 12, name: 'Gallery Space', category: 'Commercial', subcategory: 'Interiors', image: '/images/project-12.jpg', aspect: '3:4', order: 12, featured: false, createdAt: new Date() },
+  { id: 1, name: 'Villa Serena', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-01.jpg', aspect: '16:9', order: 1, featured: true, createdAt: new Date(), assets: [{ id: 1, projectId: 1, url: '/images/project-01.jpg', type: 'image', order: 0 }] },
+  { id: 2, name: 'Atrium House', category: 'Residential', subcategory: 'Interiors', image: '/images/project-02.jpg', aspect: '3:4', order: 2, featured: true, createdAt: new Date(), assets: [{ id: 2, projectId: 2, url: '/images/project-02.jpg', type: 'image', order: 0 }] },
+  { id: 3, name: 'Casa del Sol', category: 'Residential', subcategory: 'Interiors', image: '/images/project-03.jpg', aspect: '3:4', order: 3, featured: true, createdAt: new Date(), assets: [{ id: 3, projectId: 3, url: '/images/project-03.jpg', type: 'image', order: 0 }] },
+  { id: 4, name: 'Loft Industrial', category: 'Residential', subcategory: 'Interiors', image: '/images/project-04.jpg', aspect: '3:4', order: 4, featured: true, createdAt: new Date(), assets: [{ id: 4, projectId: 4, url: '/images/project-04.jpg', type: 'image', order: 0 }] },
+  { id: 5, name: 'Penthouse 360', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-05.jpg', aspect: '16:9', order: 5, featured: true, createdAt: new Date(), assets: [{ id: 5, projectId: 5, url: '/images/project-05.jpg', type: 'image', order: 0 }] },
+  { id: 6, name: 'Jardin Interior', category: 'Commercial', subcategory: 'Interiors', image: '/images/project-06.jpg', aspect: '3:4', order: 6, featured: true, createdAt: new Date(), assets: [{ id: 6, projectId: 6, url: '/images/project-06.jpg', type: 'image', order: 0 }] },
+  { id: 7, name: 'Marina Residences', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-07.jpg', aspect: '16:9', order: 7, featured: false, createdAt: new Date(), assets: [{ id: 7, projectId: 7, url: '/images/project-07.jpg', type: 'image', order: 0 }] },
+  { id: 8, name: 'Office Horizon', category: 'Commercial', subcategory: 'Interiors', image: '/images/project-08.jpg', aspect: '3:4', order: 8, featured: false, createdAt: new Date(), assets: [{ id: 8, projectId: 8, url: '/images/project-08.jpg', type: 'image', order: 0 }] },
+  { id: 9, name: 'Casa Blanca', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-09.jpg', aspect: '3:4', order: 9, featured: false, createdAt: new Date(), assets: [{ id: 9, projectId: 9, url: '/images/project-09.jpg', type: 'image', order: 0 }] },
+  { id: 10, name: 'Urban Spa', category: 'Commercial', subcategory: 'Interiors', image: '/images/project-10.jpg', aspect: '3:4', order: 10, featured: false, createdAt: new Date(), assets: [{ id: 10, projectId: 10, url: '/images/project-10.jpg', type: 'image', order: 0 }] },
+  { id: 11, name: 'Mountain Retreat', category: 'Residential', subcategory: 'Exteriors', image: '/images/project-11.jpg', aspect: '16:9', order: 11, featured: false, createdAt: new Date(), assets: [{ id: 11, projectId: 11, url: '/images/project-11.jpg', type: 'image', order: 0 }] },
+  { id: 12, name: 'Gallery Space', category: 'Commercial', subcategory: 'Interiors', image: '/images/project-12.jpg', aspect: '3:4', order: 12, featured: false, createdAt: new Date(), assets: [{ id: 12, projectId: 12, url: '/images/project-12.jpg', type: 'image', order: 0 }] },
 ];
 
 function loadProjects(): LocalProject[] {
@@ -36,7 +45,13 @@ function loadProjects(): LocalProject[] {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      return parsed.map((p: any) => ({ ...p, createdAt: new Date(p.createdAt) }));
+      return parsed.map((p: any) => {
+        // Migrate old projects without assets
+        const assets: LocalProjectAsset[] = p.assets && p.assets.length > 0
+          ? p.assets
+          : [{ id: Date.now() + Math.random(), projectId: p.id, url: p.image, type: 'image' as const, order: 0 }];
+        return { ...p, assets, createdAt: new Date(p.createdAt) };
+      });
     }
   } catch { /* ignore */ }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProjects));

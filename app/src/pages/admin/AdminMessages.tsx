@@ -1,26 +1,57 @@
 import { useState } from 'react';
-import { useLocalMessages } from '@/hooks/useLocalProjects';
-import { Trash2, Mail, MailOpen, Eye } from 'lucide-react';
+import { trpc } from '@/providers/trpc';
+import { Trash2, Mail, MailOpen, Eye, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function AdminMessages() {
-  const { messages, markRead, remove } = useLocalMessages();
+  const utils = trpc.useUtils();
+  const { data: messages, isLoading } = trpc.contact.list.useQuery();
   const [expanded, setExpanded] = useState<number | null>(null);
+
+  const markReadMutation = trpc.contact.markRead.useMutation({
+    onSuccess: () => {
+      utils.contact.list.invalidate();
+    },
+    onError: (err) => {
+      toast.error('Error al marcar como leído: ' + err.message);
+    },
+  });
+
+  const deleteMutation = trpc.contact.delete.useMutation({
+    onSuccess: () => {
+      toast.success('Mensaje eliminado');
+      utils.contact.list.invalidate();
+    },
+    onError: (err) => {
+      toast.error('Error al eliminar: ' + err.message);
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-accent" size={32} />
+      </div>
+    );
+  }
+
+  const list = messages ?? [];
 
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-display text-text-primary text-3xl">Mensajes de Contacto</h1>
-        <span className="text-sm text-text-muted">{messages.length} mensajes</span>
+        <span className="text-sm text-text-muted">{list.length} mensajes</span>
       </div>
 
-      {messages.length === 0 ? (
+      {list.length === 0 ? (
         <div className="bg-bg-secondary border border-border-custom rounded-lg p-12 text-center">
           <Mail size={32} className="text-text-muted mx-auto mb-4" />
           <p className="text-text-secondary">Aún no hay mensajes</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {messages.map((msg) => {
+          {list.map((msg) => {
             const isExpanded = expanded === msg.id;
             return (
               <div key={msg.id} className={`bg-bg-secondary border rounded-lg transition-colors ${msg.read ? 'border-border-custom' : 'border-accent/30'}`}>
@@ -28,7 +59,7 @@ export default function AdminMessages() {
                   className="px-6 py-4 flex items-center gap-4 cursor-pointer"
                   onClick={() => {
                     setExpanded(isExpanded ? null : msg.id);
-                    if (!msg.read) markRead(msg.id);
+                    if (!msg.read) markReadMutation.mutate({ id: msg.id });
                   }}
                 >
                   {msg.read ? (
@@ -52,7 +83,15 @@ export default function AdminMessages() {
 
                   <div className="flex items-center gap-2 shrink-0">
                     <Eye size={16} className={`transition-colors ${isExpanded ? 'text-accent' : 'text-text-muted'}`} />
-                    <button onClick={(e) => { e.stopPropagation(); remove(msg.id); }} className="p-2 text-text-muted hover:text-red-400 transition-colors rounded hover:bg-bg-tertiary">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('¿Eliminar este mensaje?')) {
+                          deleteMutation.mutate({ id: msg.id });
+                        }
+                      }}
+                      className="p-2 text-text-muted hover:text-red-400 transition-colors rounded hover:bg-bg-tertiary"
+                    >
                       <Trash2 size={16} />
                     </button>
                   </div>

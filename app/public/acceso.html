@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MRUIPEZ - Acceso</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0c0a09;
+      color: #fafaf9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #1c1917;
+      border: 1px solid #292524;
+      border-radius: 16px;
+      padding: 48px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+    }
+    h1 { font-weight: 300; font-size: 28px; margin-bottom: 8px; letter-spacing: -0.5px; }
+    p { color: #a8a29e; margin-bottom: 32px; font-size: 15px; line-height: 1.5; }
+    .btn {
+      display: inline-block;
+      background: #d97706;
+      color: white;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #b45309; }
+    .status {
+      margin-top: 20px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+    .ok { color: #34d399; }
+    .err { color: #f87171; }
+    .logo {
+      width: 56px;
+      height: 56px;
+      background: #d97706;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-weight: 700;
+      font-size: 22px;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">M</div>
+    <h1>MRUIPEZ</h1>
+    <p>Panel de administraci&oacute;n<br>Acceso directo para Israel Bari</p>
+    <button class="btn" onclick="entrar()">Entrar al Panel de Admin</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    function entrar() {
+      var status = document.getElementById('status');
+      try {
+        document.cookie = 'kimi_sid=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc3ODUzNDkyNCwiZXhwIjoxNzgxMTI2OTI0fQ.TWS_YqtLypgiVRqFjlQmbwYo5F-G_jOzC80yGp-Lh9w; path=/';
+        status.innerHTML = '<span class="ok">&#10003; Sesi&oacute;n activada. Redirigiendo...</span>';
+        setTimeout(function() {
+          window.location.href = '/admin';
+        }, 800);
+      } catch(e) {
+        status.innerHTML = '<span class="err">Error: ' + e.message + '</span>';
+      }
+    }
+  </script>
+</body>
+</html>

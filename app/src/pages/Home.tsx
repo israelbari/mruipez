@@ -19,8 +19,26 @@ export default function Home() {
 
   return (
     <main>
-      <HeroSection />
-      <ServicesSection />
+      <div className="relative">
+        {/* Shared video background: Hero + Services */}
+        <video
+          src="/videos/hero-bg.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="hero-bg absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Gradient overlay: 0% opacity at top → 40% at bottom */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(18, 18, 18, 0.15) 0%, rgba(18, 18, 18, 0.40) 100%)',
+          }}
+        />
+        <HeroSection />
+        <ServicesSection />
+      </div>
       <FeaturedWorkSection />
       <ProcessSection />
       <StatsSection />

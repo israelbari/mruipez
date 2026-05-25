@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MRUIPEZ - Acceso Directo</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0c0a09;
+      color: #fafaf9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #1c1917;
+      border: 1px solid #292524;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      max-width: 400px;
+    }
+    h1 { font-weight: 300; margin-bottom: 8px; }
+    p { color: #a8a29e; margin-bottom: 24px; }
+    button {
+      background: #d97706;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background: #b45309; }
+    .status { margin-top: 16px; font-size: 14px; }
+    .ok { color: #10b981; }
+    .err { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>MRUIPEZ</h1>
+    <p>Acceso directo al panel de administración</p>
+    <button onclick="entrar()">Entrar al Panel</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    function entrar() {
+      document.cookie = 'kimi_sid=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc3ODUzNDU2NSwiZXhwIjoxNzgxMTI2NTY1fQ.pyYmeXYljujobttOwz_7b1HhR2x34UxIpHXOmBFJn2U; path=/';
+      document.getElementById('status').innerHTML = '<span class="ok">✓ Sesión activada. Redirigiendo...</span>';
+      setTimeout(() => {
+        const targetUrl = window.location.protocol === 'file:' 
+          ? 'http://localhost:3005/admin' 
+          : '/admin';
+        window.location.href = targetUrl;
+      }, 500);
+    }
+  </script>
+</body>
+</html>

@@ -2,14 +2,14 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useLocalProjects } from '@/hooks/useLocalProjects';
+import { useProjects } from '@/hooks/useProjects';
 import LightboxModal from '@/components/LightboxModal';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function FeaturedWorkSection() {
   const ref = useRef<HTMLElement>(null);
-  const { projects } = useLocalProjects();
+  const { projects } = useProjects();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -125,8 +125,7 @@ export default function FeaturedWorkSection() {
       <LightboxModal
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
-        currentIndex={lightboxIndex}
-        onNavigate={setLightboxIndex}
+        initialProjectIndex={lightboxIndex}
         projects={featured}
       />
     </>

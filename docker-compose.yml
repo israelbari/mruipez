@@ -49,7 +49,7 @@ services:
       VITE_KIMI_AUTH_URL: ${VITE_KIMI_AUTH_URL:-https://auth.kimi.com}
       VITE_APP_ID: ${VITE_APP_ID:-}
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3005}:3000"
     volumes:
       - uploads_data:/app/public/uploads
     networks:

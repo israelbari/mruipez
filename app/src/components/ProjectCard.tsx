@@ -1,3 +1,11 @@
+interface ProjectAsset {
+  id: number;
+  projectId?: number;
+  url: string;
+  type: 'image' | 'video';
+  order: number;
+}
+
 interface ProjectItem {
   id: number;
   name: string;
@@ -5,6 +13,7 @@ interface ProjectItem {
   subcategory: string;
   image: string;
   video?: string | null;
+  assets: ProjectAsset[];
 }
 
 interface ProjectCardProps {
@@ -16,7 +25,7 @@ interface ProjectCardProps {
 export default function ProjectCard({ project, onClick, className = '' }: ProjectCardProps) {
   return (
     <div
-      className={`group relative overflow-hidden cursor-pointer break-inside-avoid mb-4 ${className}`}
+      className={`group relative overflow-hidden cursor-pointer ${className}`}
       onClick={onClick}
       role="button"
       tabIndex={0}
