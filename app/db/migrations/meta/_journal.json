@@ -15,6 +15,13 @@
       "when": 1779739084384,
       "tag": "0001_glossy_harry_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1779744122032,
+      "tag": "0002_massive_dark_phoenix",
+      "breakpoints": true
     }
   ]
 }

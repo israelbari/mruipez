@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createRouter, adminQuery, publicQuery } from "./middleware";
+import { createRouter, adminQuery, authedQuery, publicQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import { hashPassword } from "./lib/auth";
 import {
@@ -14,6 +14,62 @@ import {
   projectAssets,
 } from "@db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
+
+async function assertProjectAccess(db: any, projectId: number, userId: number, roles: any[]) {
+  const isAdmin = roles.some(r => r.role === 'admin' || r.role === 'superadmin');
+  if (isAdmin) return;
+
+  const project = await db
+    .select()
+    .from(clientProjects)
+    .where(eq(clientProjects.id, projectId))
+    .limit(1);
+
+  if (!project[0] || project[0].clientId !== userId) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "No tienes permiso para acceder a este proyecto",
+    });
+  }
+}
+
+async function assertMediaAccess(db: any, mediaId: number, userId: number, roles: any[]) {
+  const isAdmin = roles.some(r => r.role === 'admin' || r.role === 'superadmin');
+  if (isAdmin) return;
+
+  const mediaItem = await db
+    .select()
+    .from(clientProjectMedia)
+    .where(eq(clientProjectMedia.id, mediaId))
+    .limit(1);
+
+  if (!mediaItem[0]) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Archivo no encontrado",
+    });
+  }
+  await assertProjectAccess(db, mediaItem[0].projectId, userId, roles);
+}
+
+async function assertCommentAccess(db: any, commentId: number, userId: number, roles: any[]) {
+  const isAdmin = roles.some(r => r.role === 'admin' || r.role === 'superadmin');
+  if (isAdmin) return;
+
+  const commentItem = await db
+    .select()
+    .from(clientComments)
+    .where(eq(clientComments.id, commentId))
+    .limit(1);
+
+  if (!commentItem[0]) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Comentario no encontrado",
+    });
+  }
+  await assertProjectAccess(db, commentItem[0].projectId, userId, roles);
+}
 
 export const clientRouter = createRouter({
   // List clients with project and upload stats
@@ -235,7 +291,7 @@ export const clientRouter = createRouter({
     }),
 
   // Add media to client project
-  addProjectMedia: adminQuery
+  addProjectMedia: authedQuery
     .input(
       z.object({
         projectId: z.number(),
@@ -244,17 +300,19 @@ export const clientRouter = createRouter({
         visible: z.boolean().default(false),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = getDb();
+      await assertProjectAccess(db, input.projectId, ctx.userId, ctx.roles);
       const result = await db.insert(clientProjectMedia).values(input);
       return { id: Number(result[0].insertId) };
     }),
 
   // Delete project media
-  deleteProjectMedia: adminQuery
+  deleteProjectMedia: authedQuery
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = getDb();
+      await assertMediaAccess(db, input.id, ctx.userId, ctx.roles);
       await db.delete(clientProjectMedia).where(eq(clientProjectMedia.id, input.id));
       return { success: true };
     }),
@@ -272,7 +330,7 @@ export const clientRouter = createRouter({
     }),
 
   // Create project comment
-  createComment: adminQuery
+  createComment: authedQuery
     .input(
       z.object({
         projectId: z.number(),
@@ -280,17 +338,19 @@ export const clientRouter = createRouter({
         visible: z.boolean().default(false),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = getDb();
+      await assertProjectAccess(db, input.projectId, ctx.userId, ctx.roles);
       const result = await db.insert(clientComments).values(input);
       return { id: Number(result[0].insertId) };
     }),
 
   // Delete project comment
-  deleteComment: adminQuery
+  deleteComment: authedQuery
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = getDb();
+      await assertCommentAccess(db, input.id, ctx.userId, ctx.roles);
       await db.delete(clientComments).where(eq(clientComments.id, input.id));
       return { success: true };
     }),
@@ -396,4 +456,52 @@ export const clientRouter = createRouter({
 
       return { portfolioId: newProjectId };
     }),
+
+  // Get projects for the logged-in client
+  getMyProjects: authedQuery.query(async ({ ctx }) => {
+    const db = getDb();
+    const clientId = ctx.userId;
+    if (!clientId) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "No autenticado",
+      });
+    }
+
+    const projectsList = await db
+      .select()
+      .from(clientProjects)
+      .where(eq(clientProjects.clientId, clientId))
+      .orderBy(desc(clientProjects.createdAt));
+
+    const result = [];
+    for (const p of projectsList) {
+      // For client view, only return media, comments and time entries that are marked as 'visible'
+      const media = await db
+        .select()
+        .from(clientProjectMedia)
+        .where(and(eq(clientProjectMedia.projectId, p.id), eq(clientProjectMedia.visible, true)))
+        .orderBy(desc(clientProjectMedia.createdAt));
+
+      const comments = await db
+        .select()
+        .from(clientComments)
+        .where(and(eq(clientComments.projectId, p.id), eq(clientComments.visible, true)))
+        .orderBy(desc(clientComments.createdAt));
+
+      const timeEntries = await db
+        .select()
+        .from(clientTimeEntries)
+        .where(and(eq(clientTimeEntries.projectId, p.id), eq(clientTimeEntries.visible, true)))
+        .orderBy(desc(clientTimeEntries.date));
+
+      result.push({
+        ...p,
+        media,
+        comments,
+        timeEntries,
+      });
+    }
+    return result;
+  }),
 });
